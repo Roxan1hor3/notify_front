@@ -1,22 +1,37 @@
 <script setup lang="ts">
-import { reactive } from "vue"
+import { reactive, ref } from "vue"
 
 import Form, { FormItem } from "ant-design-vue/es/form"
 import Modal from "ant-design-vue/es/modal"
 import Input from "ant-design-vue/es/input"
 import Button from "ant-design-vue/es/button"
 import { TypographyTitle } from "ant-design-vue/es"
+import type { Rule } from "ant-design-vue/es/form"
+import type { UnwrapRef } from "vue"
+
+import { loginUser } from "../services/auth"
 
 interface FormState {
   username: string
   password: string
 }
+const formRef = ref()
 
-const formState = reactive<FormState>({
+const formState: UnwrapRef<FormState> = reactive({
   username: "",
   password: ""
 })
-const onSubmit = () => {}
+
+const rules: Record<string, Rule[]> = {
+  username: [{ required: true, message: "Please input user name" }],
+  password: [{ required: true, message: "Please input password" }]
+}
+
+const onSubmit = async () => {
+  formRef.value.validate().then(async () => {
+    loginUser(formState)
+  })
+}
 </script>
 
 <template>
@@ -28,16 +43,25 @@ const onSubmit = () => {}
     <template #title>
       <TypographyTitle class="auth-title">Notify App</TypographyTitle>
     </template>
+
     <Form
+      ref="formRef"
       :model="formState"
-      name="basic"
+      :rules="rules"
       layout="vertical"
+      name="login-form"
     >
-      <FormItem label="Username">
-        <Input v-model="formState.username" />
+      <FormItem
+        label="Username"
+        name="username"
+      >
+        <Input v-model:value="formState.username" />
       </FormItem>
-      <FormItem label="Password">
-        <Input v-model="formState.password" />
+      <FormItem
+        label="Password"
+        name="password"
+      >
+        <Input v-model:value="formState.password" />
       </FormItem>
     </Form>
 
