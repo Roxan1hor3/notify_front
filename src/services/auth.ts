@@ -3,17 +3,26 @@ import { API } from "../utils/http"
 import router from "../router"
 
 type User = {
-  username: string
-  password: string
+	username: string
+	password: string
 }
 
-export const loginUser = async (payload: User) => {
-  try {
-    const { data } = await API.post("auth/login", payload)
-    router.push({ name: "Dashboard" })
+export const loginUser = async ({ username, password }: User) => {
+	const token = username + ":" + password
+	try {
+		const { data } = await API.post(
+			"auth/login",
+			{},
+			{
+				headers: {
+					Authorization: `Basic ${btoa(token)}`
+				}
+			}
+		)
+		router.push({ name: "Dashboard" })
 
-    return data
-  } catch (e: any) {
-    message.error(e?.response?.data || "Error happend on login request")
-  }
+		return data
+	} catch (e: any) {
+		message.error(e?.response?.data || "Error happend on login request")
+	}
 }
