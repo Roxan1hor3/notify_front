@@ -26,3 +26,7 @@ export const loginUser = async ({ username, password }: User) => {
 		message.error(e?.response?.data || "Error happend on login request")
 	}
 }
+
+export const getUser = () => {
+	return API.get("auth/profile")
+}

@@ -43,10 +43,34 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue"
+import { reactive, onMounted } from "vue"
 import { CheckboxGroup } from "ant-design-vue"
 import { Select, Slider, Button, Textarea, Table } from "ant-design-vue"
 
+import * as notifyService from "../services/notify"
+
+const initFetch = async () => {
+	try {
+		const { data: filters } = await notifyService.getFilters()
+
+		console.log(filters)
+	} catch {}
+
+	try {
+		const { data: balance } = await notifyService.getBalance()
+
+		console.log(balance)
+	} catch {}
+
+	try {
+		const { data: history } = await notifyService.getNotifyHistory()
+		console.log(history)
+	} catch {}
+}
+
+onMounted(() => {
+	initFetch()
+})
 const groupOptions = [
 	{ label: "Apple", value: "Apple" },
 	{ label: "Pear", value: "Pear" },
