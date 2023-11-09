@@ -1,41 +1,74 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, onUpdated } from "vue"
 import theme from "ant-design-vue/es/theme"
 import ConfigProvider from "ant-design-vue/es/config-provider"
 import Layout, { Header, Content } from "ant-design-vue/es/layout/layout"
 import { MenuItem, Menu } from "ant-design-vue"
 import { useRoute, useRouter } from "vue-router"
 import { getUser } from "./services/auth"
+import { API } from "./utils/http"
 
 const selectedKeys = ref<string[]>(["home"])
 const route = useRoute()
 const router = useRouter()
 
-const isLoginPage = computed(() => route.name === "Login")
+const isLoginPage = computed<boolean>(() => route.name === "Login")
 const userData = ref({})
 
 // TODO remove auth logic to router
 onMounted(async () => {
 	try {
+		const cookie = document.cookie.split(";").find((item) => item.includes("Authorization="))
+
+		API.interceptors.request.use(
+			(config) => {
+				if (cookie) {
+					config.headers["Authorization"] = cookie.split("=")[1]
+				}
+				return config
+			},
+			(error) => {
+				Promise.reject(error)
+			}
+		)
+
 		const { data } = await getUser()
+
 		userData.value = data
 	} catch (e) {
 		router.push({ name: "Login" })
 	}
+})
+
+onUpdated(() => {
+	const cookie = document.cookie.split(";").find((item) => item.includes("Authorization="))
+
+	API.interceptors.request.use(
+		(config) => {
+			if (cookie) {
+				config.headers["Authorization"] = cookie.split("=")[1]
+			}
+			return config
+		},
+		(error) => {
+			Promise.reject(error)
+		}
+	)
 })
 </script>
 
 <template>
 	<ConfigProvider
 		:theme="{
-			algorithm: theme.darkAlgorithm
+			algorithm: theme.darkAlgorithm,
+			token: {
+				borderRadius: 4,
+				colorPrimaryBg: '#000000'
+			}
 		}"
 	>
 		<Layout>
-			<Header
-				v-if="!isLoginPage"
-				class="header-wrapper"
-			>
+			<Header v-if="!isLoginPage">
 				<Menu
 					v-model:selectedKeys="selectedKeys"
 					theme="dark"
@@ -45,7 +78,7 @@ onMounted(async () => {
 				</Menu>
 			</Header>
 
-			<Content class="content-wrapper">
+			<Content class="content-wrapper transparent-bg">
 				<router-view />
 			</Content>
 		</Layout>
@@ -53,13 +86,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.header-wrapper {
-	min-height: 10vh;
-	display: flex;
-	align-items: center;
-}
-
-.content-wrapper {
-	min-height: 100%;
+.transparent-bg {
+	background: #141414;
 }
 </style>

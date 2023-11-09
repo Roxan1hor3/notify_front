@@ -7,12 +7,14 @@ const baseUrl: string = env.VITE_APP_BASE_URL
 
 const API = axios.create({
 	baseURL: `${baseUrl}/api/v1/`,
-	timeout: 1000,
+	timeout: 60000,
 	headers: {}
 })
 
 API.interceptors.response.use(
 	(response) => {
+		console.log(response)
+
 		if (response.status === 401) {
 			router.push({ name: "Login" })
 		}
