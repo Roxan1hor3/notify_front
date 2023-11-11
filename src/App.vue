@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUpdated } from "vue"
+import { ref, computed, onMounted } from "vue"
 import theme from "ant-design-vue/es/theme"
 import ConfigProvider from "ant-design-vue/es/config-provider"
 import Layout, { Header, Content } from "ant-design-vue/es/layout/layout"
 import { MenuItem, Menu } from "ant-design-vue"
 import { useRoute, useRouter } from "vue-router"
 import { getUser } from "./services/auth"
-import { API } from "./utils/http"
 
 const selectedKeys = ref<string[]>(["home"])
 const route = useRoute()
