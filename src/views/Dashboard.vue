@@ -134,9 +134,16 @@
       rowKey="uuid"
       @change="onTableChange"
     >
-      <template #bodyCell="{ column, value /*, record */ }">
+      <template #bodyCell="{ column, value, record }">
         <div v-if="column.key === 'notify_date'">
           {{ getFormatedDateTime(value) }}
+        </div>
+        <div v-if="column.key === 'actions'">
+          <Button
+            type="link"
+            @click="getReport(record)"
+            >Звіт</Button
+          >
         </div>
       </template>
     </Table>
@@ -158,6 +165,7 @@ import {
   Upload,
   message
 } from "../helpers/ant"
+import { getExcelFile } from "../helpers/excel"
 import { UploadProps } from "ant-design-vue/es/upload"
 import UploadOutlined from "@ant-design/icons-vue/UploadOutlined"
 
@@ -237,7 +245,8 @@ const columns = computed(() => [
   {
     key: "uuid",
     dataIndex: "uuid",
-    title: "Id"
+    title: "Id",
+    width: 200
   },
   {
     key: "user_uuid",
@@ -247,20 +256,24 @@ const columns = computed(() => [
   {
     key: "username",
     dataIndex: "username",
-    title: "Користувач"
+    title: "Користувач",
+    width: 200
   },
   {
     key: "notify_date",
     dataIndex: "notify_date",
-    scopedSlots: {
-      customRender: "date"
-    },
-    title: "Дата"
+    title: "Дата",
+    width: 200
   },
   {
     key: "message",
     dataIndex: "message",
-    title: "Повідомлення"
+    title: "Повідомлення",
+    width: 200
+  },
+  {
+    key: "actions",
+    width: 100
   }
 ])
 
@@ -292,18 +305,11 @@ const initFetch = async () => {
 const onGenerate = async () => {
   try {
     const { data } = await notifyService.getUsersFile(toRaw(generateForm))
-    const blob = new Blob([data], { type: "text/csv" })
 
-    const url = window.URL.createObjectURL(blob)
+    getExcelFile(data)
+  } catch (e) {
+    console.log(e)
 
-    const a = document.createElement("a")
-
-    a.setAttribute("href", url)
-
-    a.setAttribute("download", "download.csv")
-
-    a.click()
-  } catch {
     message.error("ERROR")
   }
 }
@@ -316,6 +322,15 @@ const onSend = async (file: File) => {
     })
   } catch (e: any) {
     message.error(e?.response?.data || e)
+  }
+}
+
+const getReport = async ({ uuid }: any) => {
+  try {
+    await notifyService.getNotifyFile(uuid)
+  } catch (e) {
+    console.log(e)
+    message.error("ERROR")
   }
 }
 

@@ -17,76 +17,46 @@ const userData = ref({})
 
 // TODO remove auth logic to router
 onMounted(async () => {
-	try {
-		const cookie = document.cookie.split(";").find((item) => item.includes("Authorization="))
+  try {
+    const { data } = await getUser()
 
-		API.interceptors.request.use(
-			(config) => {
-				if (cookie) {
-					config.headers["Authorization"] = cookie.split("=")[1]
-				}
-				return config
-			},
-			(error) => {
-				Promise.reject(error)
-			}
-		)
-
-		const { data } = await getUser()
-
-		userData.value = data
-	} catch (e) {
-		router.push({ name: "Login" })
-	}
-})
-
-onUpdated(() => {
-	const cookie = document.cookie.split(";").find((item) => item.includes("Authorization="))
-
-	API.interceptors.request.use(
-		(config) => {
-			if (cookie) {
-				config.headers["Authorization"] = cookie.split("=")[1]
-			}
-			return config
-		},
-		(error) => {
-			Promise.reject(error)
-		}
-	)
+    userData.value = data
+  } catch (e) {
+    router.push({ name: "Login" })
+  }
 })
 </script>
 
 <template>
-	<ConfigProvider
-		:theme="{
-			algorithm: theme.darkAlgorithm,
-			token: {
-				borderRadius: 4,
-				colorPrimaryBg: '#000000'
-			}
-		}"
-	>
-		<Layout>
-			<Header v-if="!isLoginPage">
-				<Menu
-					v-model:selectedKeys="selectedKeys"
-					theme="dark"
-					mode="horizontal"
-				>
-					<MenuItem key="home">Розсилка</MenuItem>
-				</Menu>
-			</Header>
+  <ConfigProvider
+    :theme="{
+      algorithm: theme.darkAlgorithm,
+      token: {
+        borderRadius: 4,
+        colorPrimaryBg: '#000000'
+      }
+    }"
+  >
+    <Layout>
+      <Header v-if="!isLoginPage">
+        <Menu
+          v-model:selectedKeys="selectedKeys"
+          theme="dark"
+          mode="horizontal"
+        >
+          <MenuItem key="home">Розсилка</MenuItem>
+        </Menu>
+      </Header>
 
-			<Content class="content-wrapper transparent-bg">
-				<router-view />
-			</Content>
-		</Layout>
-	</ConfigProvider>
+      <Content class="content-wrapper transparent-bg">
+        <router-view />
+      </Content>
+    </Layout>
+  </ConfigProvider>
 </template>
 
 <style scoped>
 .transparent-bg {
-	background: #141414;
+  background: #141414;
 }
 </style>

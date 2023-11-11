@@ -5,10 +5,16 @@ const env = import.meta.env
 
 const baseUrl: string = env.VITE_APP_BASE_URL
 
+const cookie = document.cookie
+  .split(";")
+  .find((item) => item.includes("Authorization="))
+
 const API = axios.create({
   baseURL: `${baseUrl}/api/v1/`,
   timeout: 60000,
-  headers: {}
+  headers: {
+    Authorization: cookie ? cookie.split("=")[1] : ""
+  }
 })
 
 API.interceptors.response.use(
