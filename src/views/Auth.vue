@@ -28,9 +28,11 @@ const rules: Record<string, Rule[]> = {
 }
 
 const onSubmit = async () => {
-  formRef.value.validate().then(async () => {
-    loginUser(formState)
-  })
+  try {
+    await formRef.value.validate()
+    await loginUser(formState)
+  } finally {
+  }
 }
 </script>
 

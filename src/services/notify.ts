@@ -39,7 +39,20 @@ export const getUsersFile = (query: any) => {
   )
 }
 
-export const getNotifyHistory = (query: any) => {
+export const getNotifyHistory = ({ pagination, filters, sorter }: any) => {
+  const { current, pageSize: limit } = pagination
+  const { column, order } = sorter
+
+  const query = {
+    ...filters,
+    limit,
+    offset: (current - 1) * limit
+  }
+
+  if (column) {
+    query.ordering = order === "ascend" ? column.key : `-${column.key}`
+  }
+
   return API.get(`notify/notify_history/${simpleBuildQuery(query)}`)
 }
 
@@ -47,9 +60,13 @@ export const sendNotifyFile = ({ message, file }: any) => {
   const data = new FormData()
 
   data.append("sms_file", file)
-  return API.post(`notify/send_sms_by_file/?message=${message}`, data)
+  return API.post(`notify/send_sms_by_file/?message=${message}`, data, {
+    responseType: "arraybuffer"
+  })
 }
 
 export const getNotifyFile = (uuid: string) => {
-  return API.get(`notify/notify_report_file?notify_uuid=${uuid}`)
+  return API.get(`notify/notify_report_file?notify_uuid=${uuid}`, {
+    responseType: "arraybuffer"
+  })
 }

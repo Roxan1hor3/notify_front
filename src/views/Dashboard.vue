@@ -51,7 +51,6 @@
       <Select
         v-model:value="generateForm.is_auth"
         :options="booleanOptions"
-        style="width: 100%"
       />
     </FormItem>
 
@@ -98,9 +97,11 @@
     <FormItem>
       <Button
         type="primary"
+        :loading="isGenerating"
         @click="onGenerate()"
-        >Згенерувати</Button
       >
+        Згенерувати
+      </Button>
     </FormItem>
   </Form>
 
@@ -108,7 +109,10 @@
     class="dashboard-filters"
     layout="vertical"
   >
-    <FormItem class="dashboard-filters__item dashboard-filters__item--wide">
+    <FormItem
+      class="dashboard-filters__item dashboard-filters__item--wide"
+      required
+    >
       <Textarea v-model:value="formSend.message" />
     </FormItem>
 
@@ -117,7 +121,10 @@
         :fileList="[]"
         :beforeUpload="beforeUpload"
       >
-        <Button type="primary">
+        <Button
+          type="primary"
+          :loading="isSending"
+        >
           <template #icon>
             <UploadOutlined />
           </template>
@@ -132,18 +139,32 @@
       :dataSource="dataSource"
       :columns="columns"
       rowKey="uuid"
+      :loading="fetching"
+      :pagination="paginationInfo"
       @change="onTableChange"
     >
+      <template #title>
+        <InputSearch
+          v-model:value="filteredInfo.username"
+          style="width: 300px"
+          placeholder="Введіть користувача"
+          @search="onTableChange()"
+        />
+      </template>
       <template #bodyCell="{ column, value, record }">
         <div v-if="column.key === 'notify_date'">
           {{ getFormatedDateTime(value) }}
         </div>
         <div v-if="column.key === 'actions'">
           <Button
-            type="link"
+            type="primary"
             @click="getReport(record)"
-            >Звіт</Button
           >
+            <template #icon>
+              <DownloadOutlined />
+            </template>
+            Звіт
+          </Button>
         </div>
       </template>
     </Table>
@@ -157,6 +178,7 @@ import {
   Select,
   Input,
   Textarea,
+  InputSearch,
   Form,
   FormItem,
   Slider,
@@ -168,10 +190,13 @@ import {
 import { getExcelFile } from "../helpers/excel"
 import { UploadProps } from "ant-design-vue/es/upload"
 import UploadOutlined from "@ant-design/icons-vue/UploadOutlined"
+import DownloadOutlined from "@ant-design/icons-vue/DownloadOutlined"
 
 import { getFormatedDateTime } from "../utils/date"
 
 import * as notifyService from "../services/notify"
+import { PaginationProps } from "ant-design-vue"
+import { TablePaginationConfig } from "ant-design-vue/es/table/interface"
 
 type GroupOption = {
   grp_name: string
@@ -204,6 +229,10 @@ type SendForm = {
   message: string
 }
 
+type DashboardEmits = {
+  (e: "balanceChange", data: Record<string, number>): void
+}
+
 const booleanOptions = [
   {
     value: "",
@@ -218,6 +247,8 @@ const booleanOptions = [
     label: "No"
   }
 ]
+
+const emit = defineEmits<DashboardEmits>()
 
 const groupOptions = ref<Array<AntSelectOption>>([])
 const packagesOptions = ref<Array<AntSelectOption>>([])
@@ -239,41 +270,57 @@ const formSend = reactive<SendForm>({
   message: ""
 })
 
+const fetching = ref<boolean>(false)
 const dataSource = ref([])
+
+const paginationInfo = ref<PaginationProps>({
+  current: 1,
+  pageSize: 10
+})
+
+const filteredInfo = ref<Record<string, string>>({
+  username: ""
+})
+
+const sortedInfo = ref({})
+
+const isGenerating = ref<boolean>(false)
+const isSending = ref<boolean>(false)
 
 const columns = computed(() => [
   {
     key: "uuid",
     dataIndex: "uuid",
-    title: "Id",
+    title: "Notify Id",
     width: 200
   },
   {
     key: "user_uuid",
     dataIndex: "user_uuid",
-    title: "userId"
+    title: "ID користувача",
+    width: 170
   },
   {
     key: "username",
     dataIndex: "username",
     title: "Користувач",
-    width: 200
+    width: 150
   },
   {
     key: "notify_date",
     dataIndex: "notify_date",
     title: "Дата",
-    width: 200
+    sorter: true,
+    width: 150
   },
   {
     key: "message",
     dataIndex: "message",
-    title: "Повідомлення",
-    width: 200
+    title: "Повідомлення"
   },
   {
     key: "actions",
-    width: 100
+    width: 60
   }
 ])
 
@@ -297,53 +344,76 @@ const initFetch = async () => {
         value: id
       })
     )
-  } catch (e: any) {
-    message.error(e?.response?.data || e)
+
+    const { data: currentBalanceData } = await notifyService.getBalance()
+
+    emit("balanceChange", currentBalanceData)
+  } finally {
   }
 }
 
 const onGenerate = async () => {
   try {
+    isGenerating.value = true
+
     const { data } = await notifyService.getUsersFile(toRaw(generateForm))
 
     getExcelFile(data)
-  } catch (e) {
-    console.log(e)
-
-    message.error("ERROR")
+  } finally {
+    isGenerating.value = false
   }
 }
 
 const onSend = async (file: File) => {
+  if (!formSend.message) return
+
   try {
-    await notifyService.sendNotifyFile({
+    isSending.value = true
+
+    const { data } = await notifyService.sendNotifyFile({
       message: toRaw(formSend.message),
       file
     })
-  } catch (e: any) {
-    message.error(e?.response?.data || e)
+
+    getExcelFile(data)
+
+    message.success("Успішно")
+    onTableChange()
+  } finally {
+    isSending.value = false
   }
 }
 
 const getReport = async ({ uuid }: any) => {
   try {
-    await notifyService.getNotifyFile(uuid)
-  } catch (e) {
-    console.log(e)
-    message.error("ERROR")
+    message.info("Звіт завантажується")
+    const { data } = await notifyService.getNotifyFile(uuid)
+
+    getExcelFile(data)
+  } finally {
   }
 }
 
-const onTableChange = async () => {
+const onTableChange = async (
+  pagination: TablePaginationConfig = paginationInfo.value,
+  _: any = {},
+  sorter = sortedInfo.value
+) => {
   try {
+    fetching.value = true
+
     const { data } = await notifyService.getNotifyHistory({
-      limit: 10,
-      offset: 0
+      pagination,
+      filters: filteredInfo.value,
+      sorter
     })
 
+    paginationInfo.value = { ...pagination, total: data.count }
+    sortedInfo.value = sorter
+
     dataSource.value = data.results
-  } catch (e: any) {
-    message.error(e?.response?.data || e)
+  } finally {
+    fetching.value = false
   }
 }
 

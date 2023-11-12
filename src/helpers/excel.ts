@@ -1,6 +1,6 @@
 export const getExcelFile = (data: any) => {
   const blob = new Blob([data], {
-    type: "text/csv"
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   })
 
   const url = window.URL.createObjectURL(blob)
