@@ -217,9 +217,9 @@ const currentFile = ref<File>()
 
 const columns = computed(() => [
   {
-    key: "uuid",
-    dataIndex: "uuid",
-    title: "Notify Id",
+    key: "sent_by",
+    dataIndex: "sent_by",
+    title: "Sent by",
     width: 200
   },
   {
