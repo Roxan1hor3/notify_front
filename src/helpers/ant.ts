@@ -6,6 +6,7 @@ import Button from "ant-design-vue/es/button"
 import Table from "ant-design-vue/es/table"
 import message from "ant-design-vue/es/message"
 import Upload from "ant-design-vue/es/upload"
+import Modal from "ant-design-vue/es/modal"
 
 export {
   Select,
@@ -18,5 +19,6 @@ export {
   Button,
   Table,
   message,
-  Upload
+  Upload,
+  Modal
 }
