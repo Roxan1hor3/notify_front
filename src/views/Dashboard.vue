@@ -1,130 +1,55 @@
 <template>
-  <Form
-    class="dashboard-filters"
-    layout="vertical"
-  >
-    <FormItem
-      label="Групи"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.groups"
-        :options="groupOptions"
-        mode="tags"
-        placeholder="Будь-які"
-        :maxTagCount="1"
-        style="width: 200px"
-      />
+  <Form class="dashboard-filters" layout="vertical">
+    <FormItem label="Групи" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.groups" :options="groupOptions" mode="tags" placeholder="Будь-які"
+        :maxTagCount="1" style="width: 200px" />
     </FormItem>
 
-    <FormItem
-      label="Пакети"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.packets"
-        :options="packagesOptions"
-        mode="tags"
-        placeholder="Будь-які"
-        :maxTagCount="1"
-        style="width: 200px"
-      />
+    <FormItem label="Пакети" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.packets" :options="packagesOptions" mode="tags" placeholder="Будь-які"
+        :maxTagCount="1" style="width: 200px" />
     </FormItem>
 
-    <FormItem
-      label="Ціна"
-      class="dashboard-filters__item"
-    >
-      <Slider
-        style="width: 250px"
-        v-model:value="generateForm.price"
-        :min="balanceLimits[0]"
-        :max="balanceLimits[1]"
-        range
-      />
+    <FormItem label="Ціна" class="dashboard-filters__item">
+      <Slider style="width: 250px" v-model:value="generateForm.price" :min="balanceLimits[0]" :max="balanceLimits[1]"
+        range />
     </FormItem>
 
-    <FormItem
-      label="Авторизований"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.is_auth"
-        :options="booleanOptions"
-      />
+    <FormItem label="Авторизований" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.is_auth" :options="booleanOptions" />
     </FormItem>
 
-    <FormItem
-      label="ПІБ"
-      class="dashboard-filters__item"
-    >
+    <FormItem label="ПІБ" class="dashboard-filters__item">
       <Input v-model:value="generateForm.fio" />
     </FormItem>
 
-    <FormItem
-      label="S/N"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.sn_onu_equipment_delivered"
-        :options="booleanOptions"
-        style="width: 100%"
-      />
+    <FormItem label="S/N" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.sn_onu_equipment_delivered" :options="booleanOptions" style="width: 100%" />
     </FormItem>
 
-    <FormItem
-      label="MAC"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.mac_equipment_delivered"
-        :options="booleanOptions"
-        style="width: 100%"
-      />
+    <FormItem label="MAC" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.mac_equipment_delivered" :options="booleanOptions" style="width: 100%" />
     </FormItem>
 
-    <FormItem
-      label="Знижка"
-      class="dashboard-filters__item"
-    >
-      <Select
-        v-model:value="generateForm.is_discount"
-        :options="booleanOptions"
-        style="width: 100%"
-      />
+    <FormItem label="Знижка" class="dashboard-filters__item">
+      <Select v-model:value="generateForm.is_discount" :options="booleanOptions" style="width: 100%" />
     </FormItem>
 
     <FormItem>
-      <Button
-        type="primary"
-        :loading="isGenerating"
-        @click="onGenerate()"
-      >
+      <Button type="primary" :loading="isGenerating" @click="onGenerate()">
         Згенерувати
       </Button>
     </FormItem>
   </Form>
 
-  <Form
-    class="dashboard-filters"
-    layout="vertical"
-  >
-    <FormItem
-      class="dashboard-filters__item dashboard-filters__item--wide"
-      required
-    >
+  <Form class="dashboard-filters" layout="vertical">
+    <FormItem class="dashboard-filters__item dashboard-filters__item--wide" required>
       <Textarea v-model:value="formSend.message" />
     </FormItem>
 
     <FormItem>
-      <Upload
-        :fileList="[]"
-        :beforeUpload="beforeUpload"
-      >
-        <Button
-          type="primary"
-          :loading="isSending"
-        >
+      <Upload :fileList="[]" :beforeUpload="beforeUpload">
+        <Button :disabled="!formSend.message" type="primary" :loading="isSending">
           <template #icon>
             <UploadOutlined />
           </template>
@@ -135,31 +60,18 @@
   </Form>
 
   <div class="dashboard-table">
-    <Table
-      :dataSource="dataSource"
-      :columns="columns"
-      rowKey="uuid"
-      :loading="fetching"
-      :pagination="paginationInfo"
-      @change="onTableChange"
-    >
+    <Table :dataSource="dataSource" :columns="columns" rowKey="uuid" :loading="fetching" :pagination="paginationInfo"
+      @change="onTableChange">
       <template #title>
-        <InputSearch
-          v-model:value="filteredInfo.username"
-          style="width: 300px"
-          placeholder="Введіть користувача"
-          @search="onTableChange()"
-        />
+        <InputSearch v-model:value="filteredInfo.username" style="width: 300px" placeholder="Введіть користувача"
+          @search="onTableChange()" />
       </template>
       <template #bodyCell="{ column, value, record }">
         <div v-if="column.key === 'notify_date'">
           {{ getFormatedDateTime(value) }}
         </div>
         <div v-if="column.key === 'actions'">
-          <Button
-            type="primary"
-            @click="getReport(record)"
-          >
+          <Button type="primary" @click="getReport(record)">
             <template #icon>
               <DownloadOutlined />
             </template>
@@ -169,6 +81,19 @@
       </template>
     </Table>
   </div>
+
+  <Modal :visible="openConfirmModal" :width="400" title="Виберіть спосіб розсилки" @cancel="openConfirmModal = false">
+    <template #footer>
+      <div class="modal-footer">
+        <Button :loading="isSending" @click="sendBySms">
+          SMS
+        </Button>
+        <Button type="primary"  :loading="isSending" @click="sendByTelegram">
+          Telegram
+        </Button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -185,7 +110,8 @@ import {
   Button,
   Table,
   Upload,
-  message
+  message,
+  Modal
 } from "../helpers/ant"
 import { getExcelFile } from "../helpers/excel"
 import { UploadProps } from "ant-design-vue/es/upload"
@@ -286,6 +212,8 @@ const sortedInfo = ref({})
 
 const isGenerating = ref<boolean>(false)
 const isSending = ref<boolean>(false)
+const openConfirmModal = ref<boolean>(false)
+const currentFile = ref<File>()
 
 const columns = computed(() => [
   {
@@ -367,20 +295,52 @@ const onGenerate = async () => {
 const onSend = async (file: File) => {
   if (!formSend.message) return
 
+  currentFile.value = file
+  openConfirmModal.value = true
+}
+
+
+const sendBySms = async () => {
   try {
     isSending.value = true
 
     const { data } = await notifyService.sendNotifyFile({
       message: toRaw(formSend.message),
-      file
+      file: currentFile.value
     })
 
     getExcelFile(data)
 
     message.success("Успішно")
     onTableChange()
+  } catch (e: any) {
+    message.error(e?.response?.data?.detail || 'Помилка')
   } finally {
     isSending.value = false
+    currentFile.value = undefined
+    openConfirmModal.value = false
+  }
+}
+
+const sendByTelegram = async () => {
+  try {
+    isSending.value = true
+
+    const { data } = await notifyService.sendNotifyFileTelegram({
+      message: toRaw(formSend.message),
+      file: currentFile.value
+    })
+
+    getExcelFile(data)
+
+    message.success("Успішно")
+    onTableChange()
+  } catch (e: any) {
+    message.error(e?.response?.data?.detail || 'Помилка')
+  } finally {
+    isSending.value = false
+    currentFile.value = undefined
+    openConfirmModal.value = false
   }
 }
 
@@ -453,5 +413,16 @@ onMounted(() => {
 
 .dashboard-table {
   margin: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+
+  &>* {
+    display: inherit;
+    gap: inherit;
+  }
 }
 </style>

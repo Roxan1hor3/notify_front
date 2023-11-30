@@ -65,6 +65,15 @@ export const sendNotifyFile = ({ message, file }: any) => {
   })
 }
 
+export const sendNotifyFileTelegram = ({ message, file }: any) => {
+  const data = new FormData()
+
+  data.append("sms_file", file)
+  return API.post(`notify/send_telegram_notify_by_file/?message=${message}`, data, {
+    responseType: "arraybuffer"
+  })
+}
+
 export const getNotifyFile = (uuid: string) => {
   return API.get(`notify/notify_report_file?notify_uuid=${uuid}`, {
     responseType: "arraybuffer"
