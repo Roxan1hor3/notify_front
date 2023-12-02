@@ -59,7 +59,7 @@ export const getNotifyHistory = ({ pagination, filters, sorter }: any) => {
 export const sendNotifyFile = ({ message, file }: any) => {
   const data = new FormData()
 
-  data.append("sms_file", file)
+  data.append("sms_file", file, "sms_file.csv");
   return API.post(`notify/send_sms_by_file/?message=${message}`, data, {
     responseType: "arraybuffer"
   })
@@ -68,7 +68,7 @@ export const sendNotifyFile = ({ message, file }: any) => {
 export const sendNotifyFileTelegram = ({ message, file }: any) => {
   const data = new FormData()
 
-  data.append("telegram_notify_file", file)
+  data.append("telegram_notify_file", file, "telegram_notify_file.csv")
   return API.post(`notify/send_telegram_notify_by_file/?message=${message}`, data, {
     responseType: "arraybuffer"
   })

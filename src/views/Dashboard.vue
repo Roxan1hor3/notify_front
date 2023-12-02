@@ -113,7 +113,7 @@ import {
   message,
   Modal
 } from "../helpers/ant"
-import { getExcelFile } from "../helpers/excel"
+import { getCSVFile } from "../helpers/csv.ts"
 import { UploadProps } from "ant-design-vue/es/upload"
 import UploadOutlined from "@ant-design/icons-vue/UploadOutlined"
 import DownloadOutlined from "@ant-design/icons-vue/DownloadOutlined"
@@ -286,7 +286,7 @@ const onGenerate = async () => {
 
     const { data } = await notifyService.getUsersFile(toRaw(generateForm))
 
-    getExcelFile(data)
+    getCSVFile(data)
   } finally {
     isGenerating.value = false
   }
@@ -303,13 +303,12 @@ const onSend = async (file: File) => {
 const sendBySms = async () => {
   try {
     isSending.value = true
-
     const { data } = await notifyService.sendNotifyFile({
       message: toRaw(formSend.message),
       file: currentFile.value
     })
 
-    getExcelFile(data)
+    getCSVFile(data)
 
     message.success("Успішно")
     onTableChange()
@@ -331,7 +330,7 @@ const sendByTelegram = async () => {
       file: currentFile.value
     })
 
-    getExcelFile(data)
+    getCSVFile(data)
 
     message.success("Успішно")
     onTableChange()
@@ -349,7 +348,7 @@ const getReport = async ({ uuid }: any) => {
     message.info("Звіт завантажується")
     const { data } = await notifyService.getNotifyFile(uuid)
 
-    getExcelFile(data)
+    getCSVFile(data)
   } finally {
   }
 }
