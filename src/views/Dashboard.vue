@@ -1,77 +1,169 @@
 <template>
-  <Form class="dashboard-filters" layout="vertical">
-    <FormItem label="Групи" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.groups" :options="groupOptions" mode="tags" placeholder="Будь-які"
-        :maxTagCount="1" style="width: 200px" />
+  <Form
+    class="dashboard-filters"
+    layout="vertical"
+  >
+    <FormItem
+      label="Групи"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.groups"
+        :options="groupOptions"
+        mode="tags"
+        placeholder="Будь-які"
+        :maxTagCount="1"
+        style="width: 200px"
+      />
     </FormItem>
 
-    <FormItem label="Пакети" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.packets" :options="packagesOptions" mode="tags" placeholder="Будь-які"
-        :maxTagCount="1" style="width: 200px" />
+    <FormItem
+      label="Пакети"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.packets"
+        :options="packagesOptions"
+        mode="tags"
+        placeholder="Будь-які"
+        :maxTagCount="1"
+        style="width: 200px"
+      />
     </FormItem>
 
-    <FormItem label="Ціна" class="dashboard-filters__item">
-      <Slider style="width: 250px" v-model:value="generateForm.price" :min="balanceLimits[0]" :max="balanceLimits[1]"
-        range />
+    <FormItem
+      label="Ціна"
+      class="dashboard-filters__item"
+    >
+      <Slider
+        style="width: 250px"
+        v-model:value="generateForm.price"
+        :min="balanceLimits[0]"
+        :max="balanceLimits[1]"
+        range
+      />
     </FormItem>
 
-    <FormItem label="Авторизований" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.is_auth" :options="booleanOptions" />
+    <FormItem
+      label="Авторизований"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.is_auth"
+        :options="booleanOptions"
+      />
     </FormItem>
 
-    <FormItem label="ПІБ" class="dashboard-filters__item">
+    <FormItem
+      label="ПІБ"
+      class="dashboard-filters__item"
+    >
       <Input v-model:value="generateForm.fio" />
     </FormItem>
 
-    <FormItem label="S/N" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.sn_onu_equipment_delivered" :options="booleanOptions" style="width: 100%" />
+    <FormItem
+      label="S/N"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.sn_onu_equipment_delivered"
+        :options="booleanOptions"
+        style="width: 100%"
+      />
     </FormItem>
 
-    <FormItem label="MAC" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.mac_equipment_delivered" :options="booleanOptions" style="width: 100%" />
+    <FormItem
+      label="MAC"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.mac_equipment_delivered"
+        :options="booleanOptions"
+        style="width: 100%"
+      />
     </FormItem>
 
-    <FormItem label="Знижка" class="dashboard-filters__item">
-      <Select v-model:value="generateForm.is_discount" :options="booleanOptions" style="width: 100%" />
+    <FormItem
+      label="Знижка"
+      class="dashboard-filters__item"
+    >
+      <Select
+        v-model:value="generateForm.is_discount"
+        :options="booleanOptions"
+        style="width: 100%"
+      />
     </FormItem>
 
     <FormItem>
-      <Button type="primary" :loading="isGenerating" @click="onGenerate()">
+      <Button
+        type="primary"
+        :loading="isGenerating"
+        @click="onGenerate()"
+      >
         Згенерувати
       </Button>
     </FormItem>
   </Form>
 
-  <Form class="dashboard-filters" layout="vertical">
-    <FormItem class="dashboard-filters__item dashboard-filters__item--wide" required>
+  <Form
+    class="dashboard-filters"
+    layout="vertical"
+  >
+    <FormItem
+      class="dashboard-filters__item dashboard-filters__item--wide"
+      required
+    >
       <Textarea v-model:value="formSend.message" />
     </FormItem>
 
     <FormItem>
-      <Upload :fileList="[]" :beforeUpload="beforeUpload">
-        <Button :disabled="!formSend.message" type="primary" :loading="isSending">
-          <template #icon>
-            <UploadOutlined />
-          </template>
-          Розсилка
-        </Button>
-      </Upload>
+      <input
+        ref="inputRef"
+        type="file"
+        style="visibility: hidden"
+        accept="text/csv"
+        @change="beforeUpload"
+      />
+      <Button
+        :disabled="!formSend.message"
+        type="primary"
+        :loading="isSending"
+        @click="onInputClick"
+      >
+        <template #icon>
+          <UploadOutlined />
+        </template>
+        Розсилка
+      </Button>
     </FormItem>
   </Form>
 
   <div class="dashboard-table">
-    <Table :dataSource="dataSource" :columns="columns" rowKey="uuid" :loading="fetching" :pagination="paginationInfo"
-      @change="onTableChange">
+    <Table
+      :dataSource="dataSource"
+      :columns="columns"
+      rowKey="uuid"
+      :loading="fetching"
+      :pagination="paginationInfo"
+      @change="onTableChange"
+    >
       <template #title>
-        <InputSearch v-model:value="filteredInfo.username" style="width: 300px" placeholder="Введіть користувача"
-          @search="onTableChange()" />
+        <InputSearch
+          v-model:value="filteredInfo.username"
+          style="width: 300px"
+          placeholder="Введіть користувача"
+          @search="onTableChange()"
+        />
       </template>
       <template #bodyCell="{ column, value, record }">
         <div v-if="column.key === 'notify_date'">
           {{ getFormatedDateTime(value) }}
         </div>
         <div v-if="column.key === 'actions'">
-          <Button type="primary" @click="getReport(record)">
+          <Button
+            type="primary"
+            @click="getReport(record)"
+          >
             <template #icon>
               <DownloadOutlined />
             </template>
@@ -82,13 +174,25 @@
     </Table>
   </div>
 
-  <Modal :visible="openConfirmModal" :width="400" title="Виберіть спосіб розсилки" @cancel="openConfirmModal = false">
+  <Modal
+    :visible="openConfirmModal"
+    :width="400"
+    title="Виберіть спосіб розсилки"
+    @cancel="openConfirmModal = false"
+  >
     <template #footer>
       <div class="modal-footer">
-        <Button :loading="isSending" @click="sendBySms">
+        <Button
+          :loading="isSending"
+          @click="sendBySms"
+        >
           SMS
         </Button>
-        <Button type="primary"  :loading="isSending" @click="sendByTelegram">
+        <Button
+          type="primary"
+          :loading="isSending"
+          @click="sendByTelegram"
+        >
           Telegram
         </Button>
       </div>
@@ -109,12 +213,10 @@ import {
   Slider,
   Button,
   Table,
-  Upload,
   message,
   Modal
 } from "../helpers/ant"
 import { getCSVFile } from "../helpers/csv.ts"
-import { UploadProps } from "ant-design-vue/es/upload"
 import UploadOutlined from "@ant-design/icons-vue/UploadOutlined"
 import DownloadOutlined from "@ant-design/icons-vue/DownloadOutlined"
 
@@ -176,6 +278,7 @@ const booleanOptions = [
 
 const emit = defineEmits<DashboardEmits>()
 
+const inputRef = ref<HTMLInputElement>()
 const groupOptions = ref<Array<AntSelectOption>>([])
 const packagesOptions = ref<Array<AntSelectOption>>([])
 
@@ -252,6 +355,11 @@ const columns = computed(() => [
   }
 ])
 
+const onInputClick = () => {
+  if (!inputRef.value) return
+  inputRef.value.click()
+}
+
 const initFetch = async () => {
   try {
     const { data: filters } = await notifyService.getFilters()
@@ -299,7 +407,6 @@ const onSend = async (file: File) => {
   openConfirmModal.value = true
 }
 
-
 const sendBySms = async () => {
   try {
     isSending.value = true
@@ -313,11 +420,12 @@ const sendBySms = async () => {
     message.success("Успішно")
     onTableChange()
   } catch (e: any) {
-    message.error(e?.response?.data?.detail || 'Помилка')
+    message.error(e?.response?.data?.detail || "Помилка")
   } finally {
     isSending.value = false
     currentFile.value = undefined
     openConfirmModal.value = false
+    clearInput()
   }
 }
 
@@ -335,11 +443,12 @@ const sendByTelegram = async () => {
     message.success("Успішно")
     onTableChange()
   } catch (e: any) {
-    message.error(e?.response?.data?.detail || 'Помилка')
+    message.error(e?.response?.data?.detail || "Помилка")
   } finally {
     isSending.value = false
     currentFile.value = undefined
     openConfirmModal.value = false
+    clearInput()
   }
 }
 
@@ -351,6 +460,11 @@ const getReport = async ({ uuid }: any) => {
     getCSVFile(data)
   } finally {
   }
+}
+
+const clearInput = () => {
+  if (!inputRef.value) return
+  inputRef.value.value = ""
 }
 
 const onTableChange = async (
@@ -376,7 +490,9 @@ const onTableChange = async (
   }
 }
 
-const beforeUpload: UploadProps["beforeUpload"] = (file) => {
+const beforeUpload = (e: Event) => {
+  const { files } = e.target as any
+  const [file] = files
   onSend(file)
   return false
 }
@@ -419,7 +535,7 @@ onMounted(() => {
   gap: 16px;
   justify-content: space-between;
 
-  &>* {
+  & > * {
     display: inherit;
     gap: inherit;
   }
